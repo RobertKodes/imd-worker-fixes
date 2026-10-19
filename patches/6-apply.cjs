@@ -1,0 +1,6 @@
+// Applies the worker-side part of #6: name the conflicting paths and mark the failure as a plan conflict.
+const fs=require('fs');const [src,dst]=process.argv.slice(2);let t=fs.readFileSync(src,'utf8');
+function rep(a,b,count=1){const n=t.split(a).length-1;if(n!==count)throw new Error(`expected ${count} of: ${a.slice(0,80)} got ${n}`);t=t.split(a).join(b)}
+rep('if(!merge2.ok){return{ok:false,detail:`accepted dependencies conflict, which plan validation should have prevented: ${merge2.stderr.slice(0,300)}`}}',
+'if(!merge2.ok){const unmerged=await git(workspace,["diff","--name-only","--diff-filter=U"]);await git(workspace,["merge","--abort"]);const paths=unmerged.stdout.split("\\n").filter(Boolean);const siblings=[];for(const head of heads.slice(1)){const above=await git(workspace,["merge-base","--is-ancestor",heads[0],head]);if(!above.ok)siblings.push(head.slice(0,12))}return{ok:false,detail:`plan_conflict: accepted dependencies ${heads.map(head=>head.slice(0,12)).join(", ")} are not on one line (${siblings.join(", ")||"none"} does not descend from ${heads[0].slice(0,12)}) and both change ${paths.slice(0,12).join(", ")||"the same files"}; no seat can combine them, so this node needs a new plan, not another dispatch`}}');
+fs.writeFileSync(dst,t);console.log('patched ->',dst);
